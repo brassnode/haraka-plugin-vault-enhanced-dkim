@@ -8,23 +8,23 @@ const fixtures = require('haraka-test-fixtures')
 //    assert: https://nodejs.org/api/assert.html
 
 beforeEach(() => {
-  this.plugin = new fixtures.plugin('template')
+  this.plugin = new fixtures.plugin('vault_enhanced_dkim')
 })
 
-describe('template', () => {
+describe('vault_enhanced_dkim', () => {
   it('loads', () => {
     assert.ok(this.plugin)
   })
 })
 
-describe('load_template_ini', () => {
-  it('loads template.ini from config/template.ini', () => {
-    this.plugin.load_template_ini()
+describe('load_vault_enhanced_dkim_ini', () => {
+  it('loads vault_enhanced_dkim.ini from config/vault_enhanced_dkim.ini', () => {
+    this.plugin.load_vault_enhanced_dkim_ini()
     assert.ok(this.plugin.cfg)
   })
 
   it('initializes enabled boolean', () => {
-    this.plugin.load_template_ini()
+    this.plugin.load_vault_enhanced_dkim_ini()
     assert.equal(this.plugin.cfg.main.enabled, true, this.plugin.cfg)
   })
 })
