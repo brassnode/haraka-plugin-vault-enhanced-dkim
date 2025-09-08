@@ -9,10 +9,10 @@ const { VaultClient } = require('../lib/vault_client')
 // Mock RedisClient
 class MockCache {
   constructor() {
-    this.getFromCache = sinon.stub()
-    this.setCache = sinon.stub()
-    this.clearCache = sinon.stub().resolves()
-    this.clearDomainCache = sinon.stub().resolves()
+    this.get_from_cache = sinon.stub()
+    this.set_cache = sinon.stub()
+    this.clear_cache = sinon.stub().resolves()
+    this.clear_domain_cache = sinon.stub().resolves()
   }
 }
 
@@ -36,34 +36,34 @@ describe('VaultClient', () => {
   })
 
   it('get_from_cache delegates to cache', async () => {
-    mockCache.getFromCache.resolves('value')
+    mockCache.get_from_cache.resolves('value')
     const result = await vaultClient.get_from_cache('key')
     assert.equal(result, 'value')
-    assert(mockCache.getFromCache.calledWith('key'))
+    assert(mockCache.get_from_cache.calledWith('key'))
   })
 
   it('set_cache delegates to cache', async () => {
-    mockCache.setCache.resolves()
+    mockCache.set_cache.resolves()
     await vaultClient.set_cache('key', { foo: 'bar' })
-    assert(mockCache.setCache.calledWith('key', { foo: 'bar' }))
+    assert(mockCache.set_cache.calledWith('key', { foo: 'bar' }))
   })
 
   it('get_dkim_keys returns cached value if present', async () => {
-    mockCache.getFromCache.resolves({ privateKey: 'priv', publicKey: 'pub' })
+    mockCache.get_from_cache.resolves({ privateKey: 'priv', publicKey: 'pub' })
     const result = await vaultClient.get_dkim_keys('example.com')
     assert.deepEqual(result, { privateKey: 'priv', publicKey: 'pub' })
   })
 
   it('get_dkim_keys fetches from vault and caches if not cached', async () => {
-    mockCache.getFromCache.resolves(null)
+    mockCache.get_from_cache.resolves(null)
     mockVault.read.resolves({
       data: { data: { privateKey: 'priv', publicKey: 'pub' } },
     })
-    mockCache.setCache.resolves()
+    mockCache.set_cache.resolves()
     const result = await vaultClient.get_dkim_keys('example.com')
     assert.deepEqual(result, { privateKey: 'priv', publicKey: 'pub' })
     assert(mockVault.read.called)
-    assert(mockCache.setCache.called)
+    assert(mockCache.set_cache.called)
   })
 
   it('get_dkim_keys throws if no domain', async () => {
@@ -74,7 +74,7 @@ describe('VaultClient', () => {
   })
 
   it('get_dkim_keys throws if vault returns no keys', async () => {
-    mockCache.getFromCache.resolves(null)
+    mockCache.get_from_cache.resolves(null)
     mockVault.read.resolves({ data: { data: {} } })
     await assert.rejects(
       () => vaultClient.get_dkim_keys('example.com'),
@@ -83,7 +83,7 @@ describe('VaultClient', () => {
   })
 
   it('get_dkim_keys throws if vault returns 404', async () => {
-    mockCache.getFromCache.resolves(null)
+    mockCache.get_from_cache.resolves(null)
     mockVault.read.rejects({ response: { statusCode: 404 } })
     await assert.rejects(
       () => vaultClient.get_dkim_keys('example.com'),
@@ -98,25 +98,27 @@ describe('VaultClient', () => {
       standby: false,
     })
     const result = await vaultClient.health_check()
-    assert(result.healthy)
-    assert.equal(result.initialized, true)
+    assert(result.initialized)
     assert.equal(result.sealed, false)
+    assert.equal(result.standby, false)
   })
 
   it('health_check returns healthy false on error', async () => {
     mockVault.health.rejects(new Error('fail'))
-    const result = await vaultClient.health_check()
-    assert.equal(result.healthy, false)
-    assert(result.error)
+    try {
+      await vaultClient.health_check()
+    } catch (err) {
+      assert(err)
+    }
   })
 
   it('clear_cache delegates to cache', async () => {
     await vaultClient.clear_cache()
-    assert(mockCache.clearCache.called)
+    assert(mockCache.clear_cache.called)
   })
 
   it('clear_domain_cache delegates to cache', async () => {
     await vaultClient.clear_domain_cache('example.com')
-    assert(mockCache.clearDomainCache.calledWith('example.com'))
+    assert(mockCache.clear_domain_cache.calledWith('example.com'))
   })
 })

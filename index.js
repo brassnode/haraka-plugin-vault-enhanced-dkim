@@ -12,21 +12,18 @@ const { DKIMVerifyStream, DKIMSignStream } = dkim
 const { RedisClient } = require('./lib/redis_client')
 const { VaultClient } = require('./lib/vault_client')
 
-exports.register = function () {
-  const plugin = this
+exports.register = async function () {
   this.load_vault_enhanced_dkim_ini()
 
-  this.redis_client = new RedisClient(this.cfg.redis || {})
-  this.vault_client = new VaultClient(this.cfg.vault || {}, this.redis_client)
-
-  this.register_hook('init_master', 'check_vault_health')
+  await this.initialize_redis_connection()
+  await this.check_vault_connectivity()
 
   dkim.DKIMObject.prototype.debug = (str) => {
-    plugin.logdebug(str)
+    this.logdebug(str)
   }
 
   DKIMVerifyStream.prototype.debug = (str) => {
-    plugin.logdebug(str)
+    this.logdebug(str)
   }
 
   if (this.cfg.verify.enabled) {
@@ -36,20 +33,6 @@ exports.register = function () {
   if (this.cfg.sign.enabled) {
     this.register_hook('queue_outbound', 'hook_pre_send_trans_email')
   }
-}
-
-exports.check_vault_health = function (next) {
-  const plugin = this
-  this.vault_client.health_check((err, health) => {
-    if (err) {
-      plugin.logerror('Vault health check failed', err)
-      console.error('Vault health check failed', err)
-    } else {
-      plugin.loginfo('Vault health check passed', health)
-      console.log('Vault health check passed', health)
-    }
-    next()
-  })
 }
 
 exports.load_vault_enhanced_dkim_ini = function () {
@@ -70,6 +53,29 @@ exports.load_vault_enhanced_dkim_ini = function () {
 
   this.load_dkim_default_key()
   this.cfg.headers_to_sign = this.get_headers_to_sign()
+}
+
+exports.initialize_redis_connection = async function () {
+  this.redis_client = new RedisClient(this.cfg.redis || {})
+
+  try {
+    await this.redis_client.connect()
+    this.loginfo('Redis connected successfully')
+  } catch (err) {
+    this.logerror('Redis connection failed', err)
+    throw err
+  }
+}
+
+exports.check_vault_connectivity = async function () {
+  this.vault_client = new VaultClient(this.cfg.vault || {}, this.redis_client)
+  try {
+    await this.vault_client.health_check()
+    this.loginfo('Vault connectivity verified')
+  } catch (err) {
+    this.logerror('Vault connectivity failed', err)
+    throw err
+  }
 }
 
 // dkim_signer
