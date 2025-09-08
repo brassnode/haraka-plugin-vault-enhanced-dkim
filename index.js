@@ -9,10 +9,17 @@ const addrparser = require('address-rfc2822')
 const dkim = require('./lib/dkim')
 
 const { DKIMVerifyStream, DKIMSignStream } = dkim
+const { RedisClient } = require('./lib/redis_client')
+const { VaultClient } = require('./lib/vault_client')
 
 exports.register = function () {
   const plugin = this
   this.load_vault_enhanced_dkim_ini()
+
+  this.redis_client = new RedisClient(this.cfg.redis || {})
+  this.vault_client = new VaultClient(this.cfg.vault || {}, this.redis_client)
+
+  this.register_hook('init_master', 'check_vault_health')
 
   dkim.DKIMObject.prototype.debug = (str) => {
     plugin.logdebug(str)
@@ -29,6 +36,20 @@ exports.register = function () {
   if (this.cfg.sign.enabled) {
     this.register_hook('queue_outbound', 'hook_pre_send_trans_email')
   }
+}
+
+exports.check_vault_health = function (next) {
+  const plugin = this
+  this.vault_client.health_check((err, health) => {
+    if (err) {
+      plugin.logerror('Vault health check failed', err)
+      console.error('Vault health check failed', err)
+    } else {
+      plugin.loginfo('Vault health check passed', health)
+      console.log('Vault health check passed', health)
+    }
+    next()
+  })
 }
 
 exports.load_vault_enhanced_dkim_ini = function () {

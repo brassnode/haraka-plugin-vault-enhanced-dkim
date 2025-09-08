@@ -35,85 +35,88 @@ describe('VaultClient', () => {
     vaultClient.client = mockVault
   })
 
-  it('getFromCache delegates to cache', async () => {
+  it('get_from_cache delegates to cache', async () => {
     mockCache.getFromCache.resolves('value')
-    const result = await vaultClient.getFromCache('key')
+    const result = await vaultClient.get_from_cache('key')
     assert.equal(result, 'value')
     assert(mockCache.getFromCache.calledWith('key'))
   })
 
-  it('setCache delegates to cache', async () => {
+  it('set_cache delegates to cache', async () => {
     mockCache.setCache.resolves()
-    await vaultClient.setCache('key', { foo: 'bar' })
+    await vaultClient.set_cache('key', { foo: 'bar' })
     assert(mockCache.setCache.calledWith('key', { foo: 'bar' }))
   })
 
-  it('getDKIMKeys returns cached value if present', async () => {
+  it('get_dkim_keys returns cached value if present', async () => {
     mockCache.getFromCache.resolves({ privateKey: 'priv', publicKey: 'pub' })
-    const result = await vaultClient.getDKIMKeys('example.com')
+    const result = await vaultClient.get_dkim_keys('example.com')
     assert.deepEqual(result, { privateKey: 'priv', publicKey: 'pub' })
   })
 
-  it('getDKIMKeys fetches from vault and caches if not cached', async () => {
+  it('get_dkim_keys fetches from vault and caches if not cached', async () => {
     mockCache.getFromCache.resolves(null)
     mockVault.read.resolves({
       data: { data: { privateKey: 'priv', publicKey: 'pub' } },
     })
     mockCache.setCache.resolves()
-    const result = await vaultClient.getDKIMKeys('example.com')
+    const result = await vaultClient.get_dkim_keys('example.com')
     assert.deepEqual(result, { privateKey: 'priv', publicKey: 'pub' })
     assert(mockVault.read.called)
     assert(mockCache.setCache.called)
   })
 
-  it('getDKIMKeys throws if no domain', async () => {
-    await assert.rejects(() => vaultClient.getDKIMKeys(), /Domain is required/)
+  it('get_dkim_keys throws if no domain', async () => {
+    await assert.rejects(
+      () => vaultClient.get_dkim_keys(),
+      /Domain is required/
+    )
   })
 
-  it('getDKIMKeys throws if vault returns no keys', async () => {
+  it('get_dkim_keys throws if vault returns no keys', async () => {
     mockCache.getFromCache.resolves(null)
     mockVault.read.resolves({ data: { data: {} } })
     await assert.rejects(
-      () => vaultClient.getDKIMKeys('example.com'),
+      () => vaultClient.get_dkim_keys('example.com'),
       /Invalid DKIM key structure/
     )
   })
 
-  it('getDKIMKeys throws if vault returns 404', async () => {
+  it('get_dkim_keys throws if vault returns 404', async () => {
     mockCache.getFromCache.resolves(null)
     mockVault.read.rejects({ response: { statusCode: 404 } })
     await assert.rejects(
-      () => vaultClient.getDKIMKeys('example.com'),
+      () => vaultClient.get_dkim_keys('example.com'),
       /DKIM keys not found/
     )
   })
 
-  it('healthCheck returns healthy true if initialized and not sealed', async () => {
+  it('health_check returns healthy true if initialized and not sealed', async () => {
     mockVault.health.resolves({
       initialized: true,
       sealed: false,
       standby: false,
     })
-    const result = await vaultClient.healthCheck()
+    const result = await vaultClient.health_check()
     assert(result.healthy)
     assert.equal(result.initialized, true)
     assert.equal(result.sealed, false)
   })
 
-  it('healthCheck returns healthy false on error', async () => {
+  it('health_check returns healthy false on error', async () => {
     mockVault.health.rejects(new Error('fail'))
-    const result = await vaultClient.healthCheck()
+    const result = await vaultClient.health_check()
     assert.equal(result.healthy, false)
     assert(result.error)
   })
 
-  it('clearCache delegates to cache', async () => {
-    await vaultClient.clearCache()
+  it('clear_cache delegates to cache', async () => {
+    await vaultClient.clear_cache()
     assert(mockCache.clearCache.called)
   })
 
-  it('clearDomainCache delegates to cache', async () => {
-    await vaultClient.clearDomainCache('example.com')
+  it('clear_domain_cache delegates to cache', async () => {
+    await vaultClient.clear_domain_cache('example.com')
     assert(mockCache.clearDomainCache.calledWith('example.com'))
   })
 })

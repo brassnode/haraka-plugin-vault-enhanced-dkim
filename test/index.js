@@ -101,7 +101,6 @@ describe('load_vault_enhanced_dkim_ini', () => {
   })
 
   it('loads vault_enhanced_dkim.ini', () => {
-    // console.log(this.plugin)
     assert.deepEqual(this.plugin.cfg, undefined)
     this.plugin.load_vault_enhanced_dkim_ini()
     assert.deepEqual(this.plugin.cfg, expectedCfg)
