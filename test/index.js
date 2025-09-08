@@ -1,6 +1,7 @@
 const assert = require('node:assert')
 const { beforeEach, describe, it } = require('node:test')
 const path = require('path')
+const sinon = require('sinon')
 
 const fixtures = require('haraka-test-fixtures')
 
@@ -8,6 +9,9 @@ beforeEach(() => {
   this.plugin = new fixtures.plugin('vault-enhanced-dkim')
   this.plugin.config.root_path = path.resolve('test', 'config')
   delete this.plugin.config.overrides_path
+
+  sinon.stub(this.plugin, 'initialize_redis_connection').resolves()
+  sinon.stub(this.plugin, 'check_vault_connectivity').resolves()
 })
 
 describe('plugin', () => {
@@ -81,17 +85,19 @@ const expectedCfg = {
   ],
 }
 
-// describe('register', () => {
-//   beforeEach(() => {
-//     this.plugin.config.root_path = path.resolve(__dirname, '../config')
-//   })
+describe('register', () => {
+  beforeEach(() => {
+    this.plugin.config.root_path = path.resolve(__dirname, '../config')
+  })
 
-//   it('registers', () => {
-//     assert.deepEqual(this.plugin.cfg, undefined)
-//     this.plugin.register()
-//     assert.deepEqual(this.plugin.cfg, expectedCfg)
-//   })
-// })
+  it('registers', async () => {
+    assert.deepEqual(this.plugin.cfg, undefined)
+    await this.plugin.register()
+    assert.ok(this.plugin.initialize_redis_connection.calledOnce)
+    assert.ok(this.plugin.check_vault_connectivity.calledOnce)
+    assert.deepEqual(this.plugin.cfg, expectedCfg)
+  })
+})
 
 describe('load_vault_enhanced_dkim_ini', () => {
   beforeEach(() => {
@@ -101,6 +107,6 @@ describe('load_vault_enhanced_dkim_ini', () => {
   it('loads vault_enhanced_dkim.ini', () => {
     assert.deepEqual(this.plugin.cfg, undefined)
     this.plugin.load_vault_enhanced_dkim_ini()
-    // assert.deepEqual(this.plugin.cfg, expectedCfg)
+    assert.deepEqual(this.plugin.cfg, expectedCfg)
   })
 })
