@@ -92,12 +92,21 @@ The script will:
 ### vault_enhanced_dkim.ini
 
 ```ini
+[main]
+
 [vault]
 addr=http://vault.example.com:8200
 token=your-vault-token
 timeout=5000
 retry_count=3
 retry_delay=1000
+
+[redis]
+host=127.0.0.1
+port=6379
+password=
+db=0
+cache_ttl=3600
 
 [sign]
 enabled=false
@@ -118,6 +127,14 @@ sigerror_log_level=info
 - `timeout`: Connection timeout for Vault requests (milliseconds)
 - `retry_count`: Number of times to retry failed Vault requests
 - `retry_delay`: Time to wait between retries (milliseconds)
+
+### Redis Cache Configuration Notes
+
+- `host`: Redis server hostname (default: 127.0.0.1)
+- `port`: Redis server port (default: 6379)
+- `password`: Redis password (if required)
+- `db`: Redis database number (default: 0)
+- `cache_ttl`: Time-to-live for cached DKIM keys in seconds (default: 3600)
 
 ### Sign Configuration Notes
 

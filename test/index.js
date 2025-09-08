@@ -50,6 +50,13 @@ const expectedCfg = {
     retry_count: 3,
     retry_delay: 1000,
   },
+  redis: {
+    host: '127.0.0.1',
+    port: 6379,
+    password: '',
+    db: 0,
+    cache_ttl: 3600,
+  },
   sign: {
     enabled: false,
     selector: 'mail',
