@@ -232,9 +232,20 @@ vault kv get dkim/example.com
 
 This plugin and underlying library do not currently support DKIM body length limits (l=).
 
-<!-- leave these buried at the bottom of the document -->
+## Contributing
 
-[ci-img]: https://github.com/haraka/haraka-plugin-dkim/actions/workflows/ci.yml/badge.svg
-[ci-url]: https://github.com/haraka/haraka-plugin-dkim/actions/workflows/ci.yml
-[clim-img]: https://codeclimate.com/github/haraka/haraka-plugin-dkim/badges/gpa.svg
-[clim-url]: https://codeclimate.com/github/haraka/haraka-plugin-dkim
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+
+### Top contributors
+
+![Contributors](https://contrib.rocks/image?repo=brassnode/haraka-plugin-vault-enhanced-dkim)
+
+## License
+
+Distributed under the Unlicense License. See [LICENSE](https://github.com/brassnode/haraka-plugin-vault-enhanced-dkim/blob/master/LICENSE) for more information.
+
+## Contact
+
+Abdulmatin Sanni - [@abdulmatinsanni](https://x.com/abdulmatinsanni) - <abdulmatin@brassnode.com>

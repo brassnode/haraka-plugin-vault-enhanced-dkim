@@ -19,6 +19,6 @@ exports.load_vault_enhanced_dkim_ini = function () {
     },
     () => {
       this.load_vault_enhanced_dkim_ini()
-    },
+    }
   )
 }
