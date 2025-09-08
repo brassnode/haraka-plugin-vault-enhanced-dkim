@@ -49,7 +49,10 @@ describe('RedisClient', () => {
   })
 
   it('clearCache calls flushdb', async () => {
-    const flushdb = sinon.stub().resolves('OK')
+    // flushdb is callback-based, so stub it to call the callback
+    const flushdb = sinon.stub().callsFake(function (cb) {
+      cb(null, 'OK')
+    })
     redisClient.client.flushdb = flushdb
     await redisClient.clearCache()
     assert(flushdb.calledOnce)
