@@ -55,6 +55,7 @@ const expectedCfg = {
   redis: {
     host: '127.0.0.1',
     port: 6379,
+    username: 'redis_username',
     password: '',
     db: 0,
     cache_ttl: 3600,
