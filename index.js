@@ -5,12 +5,16 @@ const path = require('path')
 
 const async = require('async')
 const addrparser = require('address-rfc2822')
-
 const dkim = require('./lib/dkim')
 
 const { DKIMVerifyStream, DKIMSignStream } = dkim
 const { RedisClient } = require('./lib/redis_client')
 const { VaultClient } = require('./lib/vault_client')
+
+exports.dkim_key_store = {
+  local: 'local',
+  vault: 'vault',
+}
 
 exports.register = async function () {
   this.load_vault_enhanced_dkim_ini()
@@ -119,10 +123,10 @@ exports.hook_pre_send_trans_email = function (next, connection) {
     props.headers = this.cfg.headers_to_sign
 
     txn.message_stream.pipe(
-      new DKIMSignStream(props, txn.header, (err2, dkim_header) => {
-        if (err2) {
-          txn.results.add(this, { err: err2.message })
-          return next(err2)
+      new DKIMSignStream(props, txn.header, (dkim_err, dkim_header) => {
+        if (dkim_err) {
+          txn.results.add(this, { err: dkim_err.message })
+          return next(dkim_err)
         }
 
         connection.loginfo(this, `signed for ${props.domain}`)
@@ -134,6 +138,40 @@ exports.hook_pre_send_trans_email = function (next, connection) {
       })
     )
   })
+}
+
+exports.get_props_from_local_store = function (keydir, props) {
+  props.domain = path.basename(keydir) // keydir might be apex (vs sub)domain
+
+  props.private_key = this.load_key(
+    path.join('dkim', props.domain, 'private_key')
+  )
+
+  props.selector = this.load_key(
+    path.join('dkim', props.domain, 'selector')
+  ).trim()
+
+  if (!props.domain || !props.private_key || !props.selector) {
+    throw new Error(`missing dkim files for domain ${props.domain}`)
+  }
+
+  return props
+}
+
+exports.get_props_from_vault_store = async function (props) {
+  try {
+    const response = await this.vault_client.get_dkim_data(props.domain)
+    if (response) {
+      props.selector = response.selector
+      props.private_key = response.private_key
+    }
+  } catch (err) {
+    throw new Error(
+      `Error fetching DKIM keys from Vault for ${props.domain}: ${err.message}`
+    )
+  }
+
+  return props
 }
 
 exports.get_sign_properties = function (connection, done) {
@@ -148,9 +186,9 @@ exports.get_sign_properties = function (connection, done) {
     })
   }
 
-  const props = { domain }
+  let props = { domain }
 
-  this.get_key_dir(connection, props, (err, keydir) => {
+  this.get_key_dir(connection, props, async (err, keydir) => {
     if (err) {
       console.error(`err: ${err}`)
       connection.logerror(this, err)
@@ -162,34 +200,48 @@ exports.get_sign_properties = function (connection, done) {
 
     if (!connection.transaction) return done(null, props)
 
-    // a directory for ${domain} exists
-    if (keydir) {
-      props.domain = path.basename(keydir) // keydir might be apex (vs sub)domain
-      props.private_key = this.load_key(
-        path.join('dkim', props.domain, 'private_key')
-      )
-      props.selector = this.load_key(
-        path.join('dkim', props.domain, 'selector')
-      ).trim()
+    // If directory for ${domain} exists and has correct files
+    if (this.cfg.main.key_store === this.dkim_key_store.local && keydir) {
+      props = this.get_props_from_local_store(keydir, props)
+    }
 
-      if (!props.selector) {
+    // Alternatively, fetch DKIM keys from Vault
+    if (this.cfg.main.key_store === this.dkim_key_store.vault) {
+      try {
+        props = await this.get_props_from_vault_store(props)
         connection.transaction.results.add(this, {
-          err: `missing selector for domain ${domain}`,
+          msg: `fetched dkim keys from vault for ${props.domain}`,
+          emit: true,
         })
-      }
-      if (!props.private_key) {
+        connection.loginfo(
+          this,
+          `fetched dkim keys from vault for ${props.domain}`
+        )
+      } catch (vault_err) {
         connection.transaction.results.add(this, {
-          err: `missing dkim private_key for domain ${domain}`,
+          err: `error fetching dkim keys from vault for ${domain}: ${vault_err.error}`,
         })
-      }
-
-      if (props.selector && props.private_key) {
-        // AND has correct files
-        return done(null, props)
+        return done(new Error(vault_err.error), props)
       }
     }
 
-    // try [default / single domain] configuration
+    if (!props.selector) {
+      connection.transaction.results.add(this, {
+        err: `missing selector for domain ${domain}`,
+      })
+    }
+    if (!props.private_key) {
+      connection.transaction.results.add(this, {
+        err: `missing dkim private_key for domain ${domain}`,
+      })
+    }
+
+    if (props.selector && props.private_key) {
+      // AND has correct files
+      return done(null, props)
+    }
+
+    // Fallback to default key, try [default / single domain] configuration
     if (this.cfg.sign.domain && this.cfg.sign.selector && this.private_key) {
       connection.transaction.results.add(this, {
         msg: 'using default key',
