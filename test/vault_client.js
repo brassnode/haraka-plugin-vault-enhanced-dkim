@@ -84,10 +84,10 @@ describe('VaultClient', () => {
 
   it('get_dkim_data throws if vault returns no keys', async () => {
     mockCache.get_from_cache.resolves(null)
-    mockVault.read.resolves({ data: { data: {} } })
+    mockVault.read.resolves({ data: {} })
     await assert.rejects(
       () => vaultClient.get_dkim_data('example.com'),
-      /Invalid DKIM key structure/
+      /Failed to fetch DKIM keys from Vault/
     )
   })
 

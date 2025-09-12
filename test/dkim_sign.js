@@ -2,7 +2,7 @@
 
 const assert = require('node:assert')
 const { beforeEach, describe, it } = require('node:test')
-
+const sinon = require('sinon')
 const fs = require('node:fs/promises')
 const path = require('path')
 
@@ -177,10 +177,11 @@ describe('get_headers_to_sign', () => {
 const insecure_512b_test_key =
   '-----BEGIN RSA PRIVATE KEY-----\nMIGqAgEAAiEAsw3E27MbZuxmWpYfjNX5XzKTMxIv8bIAU/MpjiJE5rkCAwEAAQIg\nIVsyTj96nlzx4HRRIlqGXw7wx3C+vGhoM/Ql/eFXRVECEQDbUYF19fyzPDKAqb7p\nEu5tAhEA0QBD5Ns4QgpC8m1Qob05/QIQf1jWWU5aSyC7GmZ2ChQKCQIQIACNZNaY\nZ6xQkfRhG1LxNQIRAIyKwDCULf7Jl5ygc1MIIdk=\n-----END RSA PRIVATE KEY-----'
 
-describe('get_sign_properties', () => {
+describe('get_sign_properties with local store', () => {
   beforeEach(() => {
     this.plugin.config.root_path = path.resolve(__dirname, '../config')
     this.plugin.load_vault_enhanced_dkim_ini()
+    this.plugin.cfg.main.key_store = 'local'
     this.plugin.load_dkim_default_key()
   })
 
@@ -207,6 +208,61 @@ describe('get_sign_properties', () => {
         selector: this.plugin.cfg.sign.selector,
         private_key: this.plugin.private_key,
       })
+    })
+  })
+})
+
+describe('get_sign_properties with vault store', () => {
+  beforeEach(() => {
+    this.plugin.config.root_path = path.resolve(__dirname, '../config')
+    this.plugin.load_vault_enhanced_dkim_ini()
+    this.plugin.cfg.main.key_store = 'vault'
+    this.plugin.vault_client = {
+      get_dkim_data: sinon.stub(),
+    }
+  })
+
+  it('fetches keys from vault when key_store is vault', (t, done) => {
+    this.connection.transaction.mail_from = new Address.Address(
+      '<test@example.com>'
+    )
+
+    this.plugin.vault_client.get_dkim_data.resolves({
+      selector: 'mail',
+      private_key: insecure_512b_test_key,
+    })
+
+    this.plugin.get_sign_properties(this.connection, (err, props) => {
+      assert.ifError(err)
+      assert.deepEqual(props, {
+        domain: 'example.com',
+        selector: 'mail',
+        private_key: insecure_512b_test_key,
+      })
+      assert(this.plugin.vault_client.get_dkim_data.calledWith('example.com'))
+      done()
+    })
+  })
+
+  it('handles vault errors with fallback to default key', (t, done) => {
+    this.connection.transaction.mail_from = new Address.Address(
+      '<test@example.com>'
+    )
+
+    this.plugin.vault_client.get_dkim_data.rejects(new Error('Vault error'))
+    this.plugin.cfg.sign.domain = 'example.com'
+    this.plugin.cfg.sign.selector = 'mail'
+    this.plugin.private_key = insecure_512b_test_key
+
+    this.plugin.get_sign_properties(this.connection, (err, props) => {
+      assert.ifError(err)
+      assert.deepEqual(props, {
+        domain: 'example.com',
+        selector: 'mail',
+        private_key: insecure_512b_test_key,
+      })
+      assert(this.plugin.vault_client.get_dkim_data.calledWith('example.com'))
+      done()
     })
   })
 })
