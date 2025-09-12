@@ -90,33 +90,20 @@ Arguments:
 
 Examples:
 
-Generate and store in Vault (default path: ./config/dkim)
-
 ```sh
+# Generate and store in Vault (default path: ./config/dkim)
 ./config/dkim/dkim_key_gen.sh example.com
-```
 
-Generate and store in local filesystem with default path (./config/dkim)
-
-```sh
+# Generate and store in local filesystem with default path (./config/dkim)
 ./config/dkim/dkim_key_gen.sh example.com --store local
-```
 
-Generate and store in Vault with  with default path (dkim/example.com)
-
-```sh
+# Generate and store in Vault with  with default path (dkim/example.com)
 ./config/dkim/dkim_key_gen.sh example.com --store vault
-```
 
-Generate and store in local filesystem with custom path (custom/local/path)
-
-```sh
+# Generate and store in local filesystem with custom path (custom/local/path)
 ./config/dkim/dkim_key_gen.sh example.com --store local --path /custom/local/path
-```
 
-Generate and store in Vault with custom path (custom/path/example.com)
-
-```sh
+# Generate and store in Vault with custom path (custom/path/example.com)
 ./config/dkim/dkim_key_gen.sh example.com --store vault --path custom/path
 ```
 
