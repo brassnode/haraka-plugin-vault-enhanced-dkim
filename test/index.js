@@ -46,7 +46,7 @@ describe('uses text fixtures', () => {
 const expectedCfg = {
   main: {},
   vault: {
-    addr: 'http://vault:8200',
+    addr: 'http://127.0.0.1:8200',
     token: '',
     timeout: 5000,
     retry_count: 3,
@@ -59,6 +59,7 @@ const expectedCfg = {
     password: '',
     db: 0,
     cache_ttl: 3600,
+    cache_enc_private_key: true,
   },
   sign: {
     enabled: false,

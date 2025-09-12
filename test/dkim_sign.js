@@ -235,7 +235,7 @@ describe('load_key', () => {
       'config',
       'dkim',
       'example.com',
-      'private'
+      'private_key'
     )
     assert.equal(this.plugin.load_key(testKey), insecure_512b_test_key)
   })

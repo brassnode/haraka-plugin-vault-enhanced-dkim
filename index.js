@@ -39,7 +39,11 @@ exports.load_vault_enhanced_dkim_ini = function () {
   this.cfg = this.config.get(
     'vault_enhanced_dkim.ini',
     {
-      booleans: ['-sign.enabled', '+verify.enabled'],
+      booleans: [
+        '+redis.cache_enc_private_key',
+        '-sign.enabled',
+        '+verify.enabled',
+      ],
     },
     () => {
       this.load_vault_enhanced_dkim_ini()
@@ -162,7 +166,7 @@ exports.get_sign_properties = function (connection, done) {
     if (keydir) {
       props.domain = path.basename(keydir) // keydir might be apex (vs sub)domain
       props.private_key = this.load_key(
-        path.join('dkim', props.domain, 'private')
+        path.join('dkim', props.domain, 'private_key')
       )
       props.selector = this.load_key(
         path.join('dkim', props.domain, 'selector')
