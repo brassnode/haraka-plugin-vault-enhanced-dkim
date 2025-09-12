@@ -244,23 +244,21 @@ describe('get_sign_properties with vault store', () => {
     })
   })
 
-  it('handles vault errors with fallback to default key', (t, done) => {
+  it('handles vault errors with error propagation', (t, done) => {
     this.connection.transaction.mail_from = new Address.Address(
       '<test@example.com>'
     )
 
-    this.plugin.vault_client.get_dkim_data.rejects(new Error('Vault error'))
+    const vaultError = new Error('Vault error')
+    vaultError.error = 'Vault error'
+    this.plugin.vault_client.get_dkim_data.rejects(vaultError)
     this.plugin.cfg.sign.domain = 'example.com'
     this.plugin.cfg.sign.selector = 'mail'
     this.plugin.private_key = insecure_512b_test_key
 
     this.plugin.get_sign_properties(this.connection, (err, props) => {
-      assert.ifError(err)
-      assert.deepEqual(props, {
-        domain: 'example.com',
-        selector: 'mail',
-        private_key: insecure_512b_test_key,
-      })
+      assert(err)
+      assert.deepEqual(props, { domain: 'example.com' })
       assert(this.plugin.vault_client.get_dkim_data.calledWith('example.com'))
       done()
     })
