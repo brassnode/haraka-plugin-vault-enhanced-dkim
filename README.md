@@ -1,8 +1,5 @@
 # haraka-plugin-vault-enhanced-dkim
 
-[![CI Test Status][ci-img]][ci-url]
-[![Code Climate][clim-img]][clim-url]
-
 A Haraka plugin that integrates with HashiCorp Vault to securely manage DKIM signing keys for multiple domains.
 
 ## Overview
