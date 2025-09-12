@@ -44,13 +44,13 @@ describe('uses text fixtures', () => {
 })
 
 const expectedCfg = {
-  main: {},
+  main: {
+    key_store: 'local',
+  },
   vault: {
     addr: 'http://127.0.0.1:8200',
     token: '',
     timeout: 5000,
-    retry_count: 3,
-    retry_delay: 1000,
   },
   redis: {
     host: '127.0.0.1',

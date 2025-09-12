@@ -135,14 +135,16 @@ The script will:
 ### vault_enhanced_dkim.ini
 
 ```ini
+; The key store to use: 'local' or 'vault'
+; 'local' - keys are stored in the file system under /config/dkim-keys
+; 'vault' - keys are stored in HashiCorp Vault
 [main]
+key_store=local
 
 [vault]
 addr=http://vault.example.com:8200
 token=your-vault-token
 timeout=5000
-retry_count=3
-retry_delay=1000
 
 [redis]
 host=127.0.0.1
@@ -150,6 +152,7 @@ port=6379
 password=
 db=0
 cache_ttl=3600
+cache_enc_private_key=true
 
 [sign]
 enabled=false
@@ -163,13 +166,15 @@ allowed_time_skew=60
 sigerror_log_level=info
 ```
 
+### Main Configuration Notes
+
+- `key_store`: Specifies where DKIM keys are stored and retrieved from. Options are 'vault' (recommended) for HashiCorp Vault storage or 'local' for filesystem storage.
+
 ### Vault Configuration Notes
 
 - `addr`: Your Vault server address (e.g., `http://vault:8200` or `https://vault.example.com:8200`)
 - `token`: Vault authentication token (can also be set via `VAULT_TOKEN` environment variable)
 - `timeout`: Connection timeout for Vault requests (milliseconds)
-- `retry_count`: Number of times to retry failed Vault requests
-- `retry_delay`: Time to wait between retries (milliseconds)
 
 ### Redis Cache Configuration Notes
 
@@ -178,6 +183,7 @@ sigerror_log_level=info
 - `password`: Redis password (if required)
 - `db`: Redis database number (default: 0)
 - `cache_ttl`: Time-to-live for cached DKIM keys in seconds (default: 3600)
+- `cache_enc_private_key`: Enable encryption of private keys in Redis cache (default: true)
 
 ### Sign Configuration Notes
 
