@@ -1,10 +1,9 @@
 {
-  "name": "haraka-plugin-template",
+  "name": "haraka-plugin-vault-enhanced-dkim",
   "version": "1.0.1",
   "description": "Haraka plugin that...CHANGE THIS",
   "main": "index.js",
   "files": [
-    "CHANGELOG.md",
     "config"
   ],
   "scripts": {
@@ -19,21 +18,31 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/haraka/haraka-plugin-template.git"
+    "url": "git+https://github.com/brassnode/haraka-plugin-vault-enhanced-dkim.git"
   },
   "keywords": [
     "haraka-plugin",
-    "template"
+    "vault-enhanced-dkim"
   ],
-  "author": "Welcome Member <happy-haraka-hacker@example.com>",
+  "author": "Abdulmatin Sanni <abdulmatin.i.sanni@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/haraka/haraka-plugin-template/issues"
+    "url": "https://github.com/brassnode/haraka-plugin-vault-enhanced-dkim/issues"
   },
-  "homepage": "https://github.com/haraka/haraka-plugin-template#readme",
+  "homepage": "https://github.com/brassnode/haraka-plugin-vault-enhanced-dkim#readme",
   "devDependencies": {
     "@haraka/eslint-config": "^2.0.2",
-    "haraka-test-fixtures": "^1.3.8"
+    "haraka-test-fixtures": "^1.3.8",
+    "sinon": "^21.0.0"
+  },
+  "dependencies": {
+    "address-rfc2821": "^2.1.3",
+    "address-rfc2822": "^2.2.3",
+    "async": "^3.2.6",
+    "haraka-email-message": "^1.2.5",
+    "haraka-utils": "^1.1.4",
+    "node-vault": "^0.10.5",
+    "nopt": "^8.1.0"
   },
   "prettier": {
     "singleQuote": true,

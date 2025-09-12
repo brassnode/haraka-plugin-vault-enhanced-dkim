@@ -1,31 +1,32 @@
-const assert = require('node:assert/strict')
+const assert = require('node:assert')
 const { beforeEach, describe, it } = require('node:test')
+const path = require('path')
+const sinon = require('sinon')
 
-// npm modules
 const fixtures = require('haraka-test-fixtures')
 
-// start of tests
-//    assert: https://nodejs.org/api/assert.html
-
 beforeEach(() => {
-  this.plugin = new fixtures.plugin('template')
+  this.plugin = new fixtures.plugin('vault-enhanced-dkim')
+  this.plugin.config.root_path = path.resolve('test', 'config')
+  delete this.plugin.config.overrides_path
+
+  sinon.stub(this.plugin, 'initialize_redis_connection').resolves()
+  sinon.stub(this.plugin, 'check_vault_connectivity').resolves()
 })
 
-describe('template', () => {
+describe('plugin', () => {
   it('loads', () => {
     assert.ok(this.plugin)
   })
-})
 
-describe('load_template_ini', () => {
-  it('loads template.ini from config/template.ini', () => {
-    this.plugin.load_template_ini()
+  it('loads vault_enhanced_dkim.ini', () => {
+    this.plugin.load_vault_enhanced_dkim_ini()
     assert.ok(this.plugin.cfg)
   })
 
   it('initializes enabled boolean', () => {
-    this.plugin.load_template_ini()
-    assert.equal(this.plugin.cfg.main.enabled, true, this.plugin.cfg)
+    this.plugin.load_vault_enhanced_dkim_ini()
+    assert.equal(this.plugin.cfg.sign.enabled, true, this.plugin.cfg)
   })
 })
 
@@ -39,5 +40,75 @@ describe('uses text fixtures', () => {
     this.connection = fixtures.connection.createConnection({})
     this.connection.init_transaction()
     assert.ok(this.connection.transaction.header)
+  })
+})
+
+const expectedCfg = {
+  main: {
+    key_store: 'local',
+  },
+  vault: {
+    addr: 'http://127.0.0.1:8200',
+    token: '',
+    timeout: 5000,
+  },
+  redis: {
+    host: '127.0.0.1',
+    port: 6379,
+    username: 'redis_username',
+    password: '',
+    db: 0,
+    cache_ttl: 3600,
+    cache_enc_private_key: true,
+  },
+  sign: {
+    enabled: false,
+    selector: 'mail',
+    domain: 'example.com',
+    headers:
+      'From, Sender, Reply-To, Subject, Date, Message-ID, To, Cc, MIME-Version',
+  },
+  verify: {
+    enabled: true,
+    timeout: 29,
+    allowed_time_skew: 60,
+    sigerror_log_level: 'info',
+  },
+  headers_to_sign: [
+    'from',
+    'sender',
+    'reply-to',
+    'subject',
+    'date',
+    'message-id',
+    'to',
+    'cc',
+    'mime-version',
+  ],
+}
+
+describe('register', () => {
+  beforeEach(() => {
+    this.plugin.config.root_path = path.resolve(__dirname, '../config')
+  })
+
+  it('registers', async () => {
+    assert.deepEqual(this.plugin.cfg, undefined)
+    await this.plugin.register()
+    assert.ok(this.plugin.initialize_redis_connection.calledOnce)
+    assert.ok(this.plugin.check_vault_connectivity.calledOnce)
+    assert.deepEqual(this.plugin.cfg, expectedCfg)
+  })
+})
+
+describe('load_vault_enhanced_dkim_ini', () => {
+  beforeEach(() => {
+    this.plugin.config.root_path = path.resolve(__dirname, '../config')
+  })
+
+  it('loads vault_enhanced_dkim.ini', () => {
+    assert.deepEqual(this.plugin.cfg, undefined)
+    this.plugin.load_vault_enhanced_dkim_ini()
+    assert.deepEqual(this.plugin.cfg, expectedCfg)
   })
 })
