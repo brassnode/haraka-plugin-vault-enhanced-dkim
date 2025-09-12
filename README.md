@@ -69,22 +69,65 @@ path "kv/metadata/dkim/*" {
 
 ### Generating and Storing Keys
 
-This plugin includes a key generation script that creates DKIM keys and stores them directly in Vault:
+This plugin includes a key generation script that creates DKIM keys and stores them directly in Vault or in the local filesystem:
+
+Set Vault environment variables (if using vault storage)
 
 ```sh
-# Set Vault environment variables
 export VAULT_ADDR="http://vault.example.com:8200"
 export VAULT_TOKEN="your-vault-token"
+```
 
-# Generate DKIM keys for example.com in dkim path prefix
-./config/dkim_key_gen.sh example.com dkim
+Usage:
+
+```sh
+./config/dkim/dkim_key_gen.sh <domain> [--store vault|local] [--path path_prefix]
+
+Arguments:
+  DOMAIN               Domain name to generate DKIM keys for (required)
+  --store vault|local  Storage mode for the generated keys (default: vault)
+  --path path_prefix   Optional path prefix:
+                      - For vault: Path prefix in Vault (default: dkim)
+                      - For local: Directory path (default: ./config/dkim)
+```
+
+Examples:
+
+Generate and store in Vault (default path: ./config/dkim)
+
+```sh
+./config/dkim/dkim_key_gen.sh example.com
+```
+
+Generate and store in local filesystem with default path (./config/dkim)
+
+```sh
+./config/dkim/dkim_key_gen.sh example.com --store local
+```
+
+Generate and store in Vault with  with default path (dkim/example.com)
+
+```sh
+./config/dkim/dkim_key_gen.sh example.com --store vault
+```
+
+Generate and store in local filesystem with custom path (custom/local/path)
+
+```sh
+./config/dkim/dkim_key_gen.sh example.com --store local --path /custom/local/path
+```
+
+Generate and store in Vault with custom path (custom/path/example.com)
+
+```sh
+./config/dkim/dkim_key_gen.sh example.com --store vault --path custom/path
 ```
 
 The script will:
 
 1. Generate a 2048-bit RSA key pair
 2. Create a selector in the format `mmmYYYY` (e.g., `jan2024`)
-3. Store the keys in Vault at `dkim/example.com`
+3. Store the keys in Vault at `dkim/example.com` or in the local filesystem at `./config/dkim/example.com` (or custom paths if specified)
 4. Display DNS configuration instructions
 
 ## Plugin Configuration

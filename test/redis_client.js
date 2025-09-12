@@ -11,6 +11,7 @@ let redis_client, mock_redis, config
 describe('RedisClient', () => {
   beforeEach(() => {
     mock_redis = {
+      connect: sinon.stub().resolves(),
       get: sinon.stub(),
       set: sinon.stub(),
       del: sinon.stub(),
@@ -19,28 +20,27 @@ describe('RedisClient', () => {
     config = { host: 'localhost', port: 6379, ttl: 100, prefix: 'dkim:' }
     redis_client = new RedisClient(config)
     redis_client.client = mock_redis
-    redis_client.getAsync = sinon.stub()
-    redis_client.setAsync = sinon.stub()
-    redis_client.delAsync = sinon.stub()
   })
 
   it('get_from_cache returns parsed value', async () => {
-    redis_client.getAsync.resolves(JSON.stringify({ foo: 'bar' }))
+    mock_redis.get.resolves(JSON.stringify({ foo: 'bar' }))
     const result = await redis_client.get_from_cache('key')
     assert.deepEqual(result, { foo: 'bar' })
+    assert(mock_redis.get.calledWith('dkim:key'))
   })
 
   it('get_from_cache returns null if not found', async () => {
-    redis_client.getAsync.resolves(null)
+    mock_redis.get.resolves(null)
     const result = await redis_client.get_from_cache('key')
     assert.equal(result, null)
+    assert(mock_redis.get.calledWith('dkim:key'))
   })
 
   it('set_cache sets value with ttl', async () => {
-    redis_client.setAsync.resolves()
+    mock_redis.set.resolves()
     await redis_client.set_cache('key', { foo: 'bar' })
     assert(
-      redis_client.setAsync.calledWith(
+      mock_redis.set.calledWith(
         'dkim:key',
         JSON.stringify({ foo: 'bar' }),
         'EX',
@@ -51,15 +51,18 @@ describe('RedisClient', () => {
 
   it('clear_cache deletes all keys with prefix', async () => {
     const keys = ['dkim:key1', 'dkim:key2']
-    redis_client.client.keys = sinon.stub().yields(null, keys)
-    redis_client.delAsync.resolves()
+    mock_redis.keys.resolves(keys)
+    mock_redis.del.resolves()
     await redis_client.clear_cache()
-    assert(redis_client.delAsync.calledWith(keys))
+    assert(mock_redis.keys.calledWith('dkim:*'))
+    assert(mock_redis.del.calledWith(keys))
+    await Promise.resolve()
   })
 
   it('clear_domain_cache deletes the domain key', async () => {
-    redis_client.delAsync.resolves()
+    mock_redis.del.resolves()
     await redis_client.clear_domain_cache('example.com')
-    assert(redis_client.delAsync.calledWith('dkim:vault:dkim/example.com'))
+    assert(mock_redis.del.calledWith('dkim:vault:dkim/example.com'))
+    await Promise.resolve()
   })
 })

@@ -48,45 +48,54 @@ describe('VaultClient', () => {
     assert(mockCache.set_cache.calledWith('key', { foo: 'bar' }))
   })
 
-  it('get_dkim_keys returns cached value if present', async () => {
-    mockCache.get_from_cache.resolves({ privateKey: 'priv', publicKey: 'pub' })
-    const result = await vaultClient.get_dkim_keys('example.com')
-    assert.deepEqual(result, { privateKey: 'priv', publicKey: 'pub' })
+  it('get_dkim_data returns cached value if present', async () => {
+    mockCache.get_from_cache.resolves({
+      private_key: 'priv',
+      public_key: 'pub',
+    })
+    const result = await vaultClient.get_dkim_data('example.com')
+    assert.deepEqual(result, { private_key: 'priv', public_key: 'pub' })
   })
 
-  it('get_dkim_keys fetches from vault and caches if not cached', async () => {
+  it('get_dkim_data fetches from vault and caches if not cached', async () => {
     mockCache.get_from_cache.resolves(null)
     mockVault.read.resolves({
-      data: { data: { privateKey: 'priv', publicKey: 'pub' } },
+      data: {
+        private_key: 'priv',
+        public_key: 'pub',
+      },
     })
     mockCache.set_cache.resolves()
-    const result = await vaultClient.get_dkim_keys('example.com')
-    assert.deepEqual(result, { privateKey: 'priv', publicKey: 'pub' })
+    const result = await vaultClient.get_dkim_data('example.com')
+    assert.deepEqual(result, {
+      private_key: 'priv',
+      public_key: 'pub',
+    })
     assert(mockVault.read.called)
     assert(mockCache.set_cache.called)
   })
 
-  it('get_dkim_keys throws if no domain', async () => {
+  it('get_dkim_data throws if no domain', async () => {
     await assert.rejects(
-      () => vaultClient.get_dkim_keys(),
+      () => vaultClient.get_dkim_data(),
       /Domain is required/
     )
   })
 
-  it('get_dkim_keys throws if vault returns no keys', async () => {
+  it('get_dkim_data throws if vault returns no keys', async () => {
     mockCache.get_from_cache.resolves(null)
     mockVault.read.resolves({ data: { data: {} } })
     await assert.rejects(
-      () => vaultClient.get_dkim_keys('example.com'),
+      () => vaultClient.get_dkim_data('example.com'),
       /Invalid DKIM key structure/
     )
   })
 
-  it('get_dkim_keys throws if vault returns 404', async () => {
+  it('get_dkim_data throws if vault returns 404', async () => {
     mockCache.get_from_cache.resolves(null)
     mockVault.read.rejects({ response: { statusCode: 404 } })
     await assert.rejects(
-      () => vaultClient.get_dkim_keys('example.com'),
+      () => vaultClient.get_dkim_data('example.com'),
       /DKIM keys not found/
     )
   })
