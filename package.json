@@ -1,7 +1,7 @@
 {
   "name": "haraka-plugin-vault-enhanced-dkim",
   "version": "1.0.1",
-  "description": "Haraka plugin that...CHANGE THIS",
+  "description": "Haraka plugin that enhances DKIM signing and verification with Vault integration",
   "main": "index.js",
   "files": [
     "config"
