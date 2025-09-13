@@ -136,7 +136,17 @@ port=6379
 password=
 db=0
 cache_ttl=3600
-cache_enc_private_key=true
+; Encryption key for caching private keys in Redis (optional)
+; If set, private keys will be encrypted before being stored in Redis
+; and decrypted when retrieved. Use a strong, random key.
+; Example: cache_encryption_key=your-32-character-random-string
+; Leave empty to disable encryption
+;
+; Generate a secure encryption key using either:
+; openssl rand -hex 32
+; or
+; head -c 32 /dev/urandom | xxd -p -c 32
+cache_encryption_key=
 
 [sign]
 enabled=false
@@ -167,7 +177,7 @@ sigerror_log_level=info
 - `password`: Redis password (if required)
 - `db`: Redis database number (default: 0)
 - `cache_ttl`: Time-to-live for cached DKIM keys in seconds (default: 3600)
-- `cache_enc_private_key`: Enable encryption of private keys in Redis cache (default: true)
+- `cache_encryption_key`: Encryption key for caching private keys in Redis (optional)
 
 ### Sign Configuration Notes
 

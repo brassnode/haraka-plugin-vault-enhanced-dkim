@@ -59,7 +59,7 @@ const expectedCfg = {
     password: '',
     db: 0,
     cache_ttl: 3600,
-    cache_enc_private_key: true,
+    cache_encryption_key: '',
   },
   sign: {
     enabled: false,

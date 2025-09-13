@@ -16,7 +16,7 @@ class MockCache {
   }
 }
 
-describe('VaultClient', () => {
+describe('vault client', () => {
   let vaultClient, mockCache, mockVault
 
   beforeEach(() => {

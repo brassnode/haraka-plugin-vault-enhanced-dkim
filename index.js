@@ -43,11 +43,7 @@ exports.load_vault_enhanced_dkim_ini = function () {
   this.cfg = this.config.get(
     'vault_enhanced_dkim.ini',
     {
-      booleans: [
-        '+redis.cache_enc_private_key',
-        '-sign.enabled',
-        '+verify.enabled',
-      ],
+      booleans: ['-sign.enabled', '+verify.enabled'],
     },
     () => {
       this.load_vault_enhanced_dkim_ini()
@@ -160,10 +156,10 @@ exports.get_props_from_local_store = function (keydir, props) {
 
 exports.get_props_from_vault_store = async function (props) {
   try {
-    const response = await this.vault_client.get_dkim_data(props.domain)
-    if (response) {
-      props.selector = response.selector
-      props.private_key = response.private_key
+    const data = await this.vault_client.get_dkim_data(props.domain)
+    if (data) {
+      props.selector = data.selector
+      props.private_key = data.private_key
     }
   } catch (err) {
     throw new Error(
@@ -213,13 +209,9 @@ exports.get_sign_properties = function (connection, done) {
           msg: `fetched dkim keys from vault for ${props.domain}`,
           emit: true,
         })
-        connection.loginfo(
-          this,
-          `fetched dkim keys from vault for ${props.domain}`
-        )
       } catch (vault_err) {
         connection.transaction.results.add(this, {
-          err: `error fetching dkim keys from vault for ${domain}: ${vault_err.error}`,
+          err: `error fetching dkim keys from vault for ${domain}: ${vault_err}`,
         })
         return done(new Error(vault_err.error), props)
       }
