@@ -8,6 +8,11 @@ on:
   schedule:
     - cron: '18 7 * * 4'
 
+permissions:
+  actions: read
+  security-events: write
+  contents: read
+
 jobs:
   codeql:
     uses: haraka/.github/.github/workflows/codeql.yml@master
