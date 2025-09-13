@@ -60,7 +60,7 @@ beforeEach(() => {
 
 describe('sign', () => {
   beforeEach(() => {
-    this.plugin.load_vault_enhanced_dkim_ini()
+    this.plugin.load_dkim_ini()
     props.headers = this.plugin.cfg.headers_to_sign
   })
 

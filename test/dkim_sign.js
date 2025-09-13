@@ -180,7 +180,7 @@ const insecure_512b_test_key =
 describe('get_sign_properties with local store', () => {
   beforeEach(() => {
     this.plugin.config.root_path = path.resolve(__dirname, '../config')
-    this.plugin.load_vault_enhanced_dkim_ini()
+    this.plugin.load_dkim_ini()
     this.plugin.cfg.main.key_store = 'local'
     this.plugin.load_dkim_default_key()
   })
@@ -215,7 +215,7 @@ describe('get_sign_properties with local store', () => {
 describe('get_sign_properties with vault store', () => {
   beforeEach(() => {
     this.plugin.config.root_path = path.resolve(__dirname, '../config')
-    this.plugin.load_vault_enhanced_dkim_ini()
+    this.plugin.load_dkim_ini()
     this.plugin.cfg.main.key_store = 'vault'
     this.plugin.vault_client = {
       get_dkim_data: sinon.stub(),

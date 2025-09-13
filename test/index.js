@@ -19,13 +19,13 @@ describe('plugin', () => {
     assert.ok(this.plugin)
   })
 
-  it('loads vault_enhanced_dkim.ini', () => {
-    this.plugin.load_vault_enhanced_dkim_ini()
+  it('loads dkim.ini', () => {
+    this.plugin.load_dkim_ini()
     assert.ok(this.plugin.cfg)
   })
 
   it('initializes enabled boolean', () => {
-    this.plugin.load_vault_enhanced_dkim_ini()
+    this.plugin.load_dkim_ini()
     assert.equal(this.plugin.cfg.sign.enabled, true, this.plugin.cfg)
   })
 })
@@ -59,7 +59,7 @@ const expectedCfg = {
     password: '',
     db: 0,
     cache_ttl: 3600,
-    cache_enc_private_key: true,
+    cache_encryption_key: '',
   },
   sign: {
     enabled: false,
@@ -101,14 +101,14 @@ describe('register', () => {
   })
 })
 
-describe('load_vault_enhanced_dkim_ini', () => {
+describe('load_dkim_ini', () => {
   beforeEach(() => {
     this.plugin.config.root_path = path.resolve(__dirname, '../config')
   })
 
-  it('loads vault_enhanced_dkim.ini', () => {
+  it('loads dkim.ini', () => {
     assert.deepEqual(this.plugin.cfg, undefined)
-    this.plugin.load_vault_enhanced_dkim_ini()
+    this.plugin.load_dkim_ini()
     assert.deepEqual(this.plugin.cfg, expectedCfg)
   })
 })
