@@ -116,7 +116,7 @@ The script will:
 
 ## Plugin Configuration
 
-### vault_enhanced_dkim.ini
+### dkim.ini
 
 ```ini
 ; The key store to use: 'local' or 'vault'

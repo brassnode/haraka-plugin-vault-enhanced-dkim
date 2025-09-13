@@ -17,7 +17,7 @@ exports.dkim_key_store = {
 }
 
 exports.register = async function () {
-  this.load_vault_enhanced_dkim_ini()
+  this.load_dkim_ini()
 
   await this.initialize_redis_connection()
   await this.check_vault_connectivity()
@@ -39,14 +39,14 @@ exports.register = async function () {
   }
 }
 
-exports.load_vault_enhanced_dkim_ini = function () {
+exports.load_dkim_ini = function () {
   this.cfg = this.config.get(
-    'vault_enhanced_dkim.ini',
+    'dkim.ini',
     {
       booleans: ['-sign.enabled', '+verify.enabled'],
     },
     () => {
-      this.load_vault_enhanced_dkim_ini()
+      this.load_dkim_ini()
     }
   )
 
