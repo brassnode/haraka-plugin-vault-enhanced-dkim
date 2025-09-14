@@ -308,4 +308,4 @@ Distributed under the Unlicense License. See [LICENSE](https://github.com/brassn
 
 ## Contact
 
-Abdulmatin Sanni - [@abdulmatinsanni](https://x.com/abdulmatinsanni) - <abdulmatin@brassnode.com>
+Abdulmatin Sanni - [@abdulmatinsanni](https://linkedin.com/in/abdulmatinsanni) - <abdulmatin@brassnode.com>
