@@ -4,7 +4,16 @@
   "description": "Haraka plugin that enhances DKIM signing and verification with Vault integration",
   "main": "index.js",
   "files": [
-    "config"
+    "CHANGELOG.md",
+    "bin",
+    "config",
+    "lib"
+  ],
+  "bin": [
+    "dkim_key_gen.sh",
+    "./config/dkim_key_gen.sh",
+    "dkimverify",
+    "./bin/dkimverify"
   ],
   "scripts": {
     "format": "npm run prettier:fix && npm run lint:fix",
