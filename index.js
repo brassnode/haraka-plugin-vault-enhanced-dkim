@@ -16,8 +16,6 @@ exports.dkim_key_store = {
   vault: 'vault',
 }
 
-exports.name = 'dkim/vault-enhanced'
-
 exports.register = async function () {
   this.load_dkim_ini()
 
