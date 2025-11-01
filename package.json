@@ -51,7 +51,7 @@
     "haraka-email-message": "^1.2.5",
     "haraka-utils": "^1.1.4",
     "node-vault": "^0.10.5",
-    "nopt": "^8.1.0",
+    "nopt": "^9.0.0",
     "redis": "^5.8.2"
   },
   "prettier": {
