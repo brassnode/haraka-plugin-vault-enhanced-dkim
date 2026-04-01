@@ -50,7 +50,7 @@
     "async": "^3.2.6",
     "haraka-email-message": "^1.2.5",
     "haraka-utils": "^1.1.4",
-    "node-vault": "^0.10.5",
+    "node-vault": "^0.12.0",
     "nopt": "^8.1.0",
     "redis": "^5.8.2"
   },
